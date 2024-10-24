@@ -49,9 +49,10 @@ class Place:
 class Insect:
     """An Insect, the base class of Ant and Bee, has health and a Place."""
 
+    # ADD CLASS ATTRIBUTES HERE
     next_id = 0  # Every insect gets a unique id number
     damage = 0
-    # ADD CLASS ATTRIBUTES HERE
+    is_waterproof = False
 
     def __init__(self, health, place=None):
         """Create an Insect with a health amount and a starting PLACE."""
@@ -103,6 +104,7 @@ class Ant(Insect):
 
     def __init__(self, health=1):
         super().__init__(health)
+        self.is_damage_doubled = False
 
     def can_contain(self, other):
         return False
@@ -140,7 +142,9 @@ class Ant(Insect):
     def double(self):
         """Double this ants's damage, if it has not already been doubled."""
         # BEGIN Problem 12
-        "*** YOUR CODE HERE ***"
+        if not self.is_damage_doubled:
+            self.damage *= 2
+            self.is_damage_doubled = True
         # END Problem 12
 
 
@@ -389,11 +393,18 @@ class Water(Place):
         """Add an Insect to this place. If the insect is not waterproof, reduce
         its health to 0."""
         # BEGIN Problem 10
-        "*** YOUR CODE HERE ***"
+        super().add_insect(insect)
+        if not insect.is_waterproof:
+            insect.reduce_health(insect.health)
         # END Problem 10
 
 # BEGIN Problem 11
 # The ScubaThrower class
+class ScubaThrower(ThrowerAnt):
+    is_waterproof = True
+    is_implemented = True
+    name = 'Scuba'
+    food_cost = 6
 # END Problem 11
 
 
@@ -404,7 +415,7 @@ class QueenAnt(ThrowerAnt):
     food_cost = 7
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 12
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 12
 
     def action(self, gamestate):
@@ -412,7 +423,14 @@ class QueenAnt(ThrowerAnt):
         in her tunnel.
         """
         # BEGIN Problem 12
-        "*** YOUR CODE HERE ***"
+        temp_place = self.place.exit
+        while temp_place:
+            if temp_place.ant:
+                temp_place.ant.double()
+                if temp_place.ant.is_container and temp_place.ant.ant_contained:
+                    temp_place.ant.ant_contained.double()
+            temp_place = temp_place.exit
+        super().action(gamestate)
         # END Problem 12
 
     def reduce_health(self, amount):
@@ -420,7 +438,9 @@ class QueenAnt(ThrowerAnt):
         remaining, signal the end of the game.
         """
         # BEGIN Problem 12
-        "*** YOUR CODE HERE ***"
+        if amount >= self.health:
+            ants_lose()
+        super().reduce_health(amount)
         # END Problem 12
 
 
